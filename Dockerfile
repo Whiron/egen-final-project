@@ -5,4 +5,4 @@ COPY covid-data-project-328321-c37b3c4360fb.json covid-data-project-328321-c37b3
 COPY pub_docker.py pub_docker.py
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-CMD [ "python3", "pub_docker.py"]
+CMD ["python3", "pub_docker.py"]

@@ -53,9 +53,9 @@ def analyze_data(**kwargs):
     population_data = concated_data[['state','population']].drop_duplicates()
     concated_data = concated_data.drop(columns=["date","population","confirmed","deaths"])
     sum_data = concated_data.groupby(["state"],as_index=False).sum()
+    sum_data['date'] = new_data['date']
     sum_data = sum_data.set_index('state').join(population_data.set_index('state'))
     sum_data = sum_data.join(geo_data)
-
     sum_data["active_idx"] = (sum_data["confirmed_daily"] * 1000) / sum_data['population']
     sum_data["density_idx"] = (sum_data["confirmed_daily"]*1000)/sum_data['area']
     # sum_data = sum_data.drop_duplicates()
@@ -79,13 +79,6 @@ def load_data(**kwargs):
     data = task_instance.xcom_pull(task_ids="transform_data")
     print("Received dataframes")
     print(json.dumps(data))
-    # data=pd.read_json(data)
-    # data["confirmed_daily"] = pd.to_numeric(data["confirmed_daily"])
-    # data["deaths_daily"] = pd.to_numeric(data["deaths_daily"])
-    # data["deaths"] = pd.to_numeric(data["deaths"])
-    # data["confirmed"] = pd.to_numeric(data["confirmed"])
-    # data["population"] = pd.to_numeric(data["population"])
-    # print("Rows in dataframe is",str(len(data)))
 
     analyzed_data = pd.read_json(data['analyzed_data'])
     new_data = pd.read_json(data['new_data'])
@@ -99,7 +92,6 @@ def load_data(**kwargs):
         bqclient.create_table("state_analyzed_data")
     except:
         pass
-    bqclient.delete_table("covid-data-project-328321.covid_data.state_analyzed_data",not_found_ok=True)
     bqclient.load_table_from_dataframe(new_data, "covid-data-project-328321.covid_data.state_case_data")
     bqclient.load_table_from_dataframe(analyzed_data, "covid-data-project-328321.covid_data.state_analyzed_data")
 
